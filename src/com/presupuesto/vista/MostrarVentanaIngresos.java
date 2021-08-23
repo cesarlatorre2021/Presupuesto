@@ -20,6 +20,8 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import com.presupuesto.controlador.ResultSetTableModel;
+import com.toedter.calendar.JDateChooser;
+import com.toedter.calendar.JSpinnerDateEditor;
 
 public class MostrarVentanaIngresos extends JFrame {
 	
@@ -31,7 +33,6 @@ public class MostrarVentanaIngresos extends JFrame {
 	private ResultSetTableModel resultSetTableModel;
 
 	private JLabel fecha;
-	private JTextField campoFecha;
 	private JLabel categoria;
 	private JLabel descripcion;
 	private JTextField campoDescripcion;
@@ -39,7 +40,9 @@ public class MostrarVentanaIngresos extends JFrame {
 	private JTextField campoValor;
 	private JPanel panelMostrar;
 	private JButton botonInsertar;
+	private JDateChooser dateChooser;
 	private JComboBox<Object> campoCategoria;
+	private SimpleDateFormat formateador ;
 	public MostrarResultadosConsulta mostrarResultadosConsulta;
 
 	public MostrarVentanaIngresos() throws ClassNotFoundException, SQLException
@@ -47,11 +50,10 @@ public class MostrarVentanaIngresos extends JFrame {
 		super( "Insertar Ingreso" ); 
 		
 		String[] listaCategorias = { "Salario", "Inversión", "Devoluciones", "Otros"};
-		
-	    Date dato = new Date();
-	    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy"); 
 		resultSetTableModel = new ResultSetTableModel("INGRESO"); 
-		
+		Date dato = new Date();
+	    formateador = new SimpleDateFormat("dd/MM/yyyy");
+
 		JPanel panelIngreso = new JPanel();
 		Box boxIngreso =Box.createVerticalBox();
 		
@@ -60,10 +62,9 @@ public class MostrarVentanaIngresos extends JFrame {
 		setLayout( new FlowLayout( FlowLayout.CENTER, 5, 5 ) );
 		panelMostrar.setLayout( new GridLayout( 4, 2, 4, 4 ) );
 		
+		dateChooser = new JDateChooser(null, dato , dato.toString(), new JSpinnerDateEditor());		
+		dateChooser.setDateFormatString("dd/MM/yyyy");
 		fecha = new JLabel();
-		campoFecha = new JTextField( 10 );
-		campoFecha.setText(sdf.format(dato)); 
-		campoFecha.setEditable(false);
 		fecha.setText( "Fecha" );
 		
 		categoria = new JLabel();
@@ -79,7 +80,7 @@ public class MostrarVentanaIngresos extends JFrame {
 		valor.setText( "Valor:" );
 			
 		panelMostrar.add( fecha );
-		panelMostrar.add( campoFecha );
+		panelMostrar.add( dateChooser );
 		panelMostrar.add( categoria );
 		panelMostrar.add( campoCategoria );
 		panelMostrar.add( descripcion );
@@ -132,7 +133,7 @@ public class MostrarVentanaIngresos extends JFrame {
 	private void botonInsertarActionPerformed( ActionEvent evt ) 
 	{
 		
-		int resultado = resultSetTableModel.insertarIngreso(campoFecha.getText(), campoCategoria.getSelectedItem().toString(), campoDescripcion.getText(), campoValor.getText());
+		int resultado = resultSetTableModel.insertarIngreso( formateador.format(dateChooser.getDate()), campoCategoria.getSelectedItem().toString(), campoDescripcion.getText(), campoValor.getText());
 	
 		if ( resultado == 1 ) {
 			JOptionPane.showMessageDialog( this, "Se agrego ingreso!","Se agrego ingreso", JOptionPane.PLAIN_MESSAGE );

@@ -17,6 +17,7 @@ import java.util.Locale;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JButton;
@@ -24,6 +25,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JLabel;
 import javax.swing.border.Border;
+import javax.swing.table.TableModel;
 
 import com.presupuesto.controlador.ResultSetTableModel;
 import com.toedter.calendar.JCalendar;
@@ -42,8 +44,8 @@ public class MostrarResultadosConsulta extends JFrame
 	public MostrarPanelSur mostrarPanelSur;
 	public MostrarPanelNorte mostrarPanelNorte;
 	public MostrarPanelCentral mostrarPanelCentral;
-	private JTable tablaResultados;
-	private JPanel panelNorte;
+	public JTable tablaResultados;
+	public JPanel panelNorte;
 
 	public MostrarResultadosConsulta() throws ClassNotFoundException, SQLException 
 	{
@@ -70,8 +72,7 @@ public class MostrarResultadosConsulta extends JFrame
 			compound = BorderFactory.createCompoundBorder(redline, compound);
 					
 			//INICIO CONTRUCCION DE PANEL NORTE
-			mostrarPanelNorte = new MostrarPanelNorte();
-			panelNorte = mostrarPanelNorte.MostrarPanelNorte(fechaCompleta);
+			panelNorte =new MostrarPanelNorte(fechaCompleta);
 			//FIN CONTRUCCION DE PANEL NORTE
 			
 			//INICIO CONSTRUCCION DEL PANEL SUR		
@@ -80,7 +81,7 @@ public class MostrarResultadosConsulta extends JFrame
 						
 			//INICIO CONTRUCCION DEL PANEL CENTRAL 
 			mostrarPanelCentral = new MostrarPanelCentral();
-			tablaResultados = mostrarPanelCentral.MostrarPanelCentral(modeloTabla);		
+			tablaResultados = mostrarPanelCentral.MostrarPanelCentral(modeloTabla);
 			//FIN CONTRUCCION DEL PANEL CENTRAL 
 			
 			//INICIO CONTRUCCION DE PANEL ORIENTE
@@ -200,30 +201,30 @@ public class MostrarResultadosConsulta extends JFrame
 				    	
 						try {
 							panelNorte.removeAll();
-							panelNorte = mostrarPanelNorte.MostrarPanelNorte(fechaCompleta);
+							panelNorte = new MostrarPanelNorte(fechaCompleta);
 							add( panelNorte, BorderLayout.NORTH);
-							panelNorte.updateUI();
+							SwingUtilities.updateComponentTreeUI(panelNorte);
 							
-							tablaResultados.removeAll();
 							modeloTabla.consultarIngreso(fecha);
 							tablaResultados =  mostrarPanelCentral.MostrarPanelCentral(modeloTabla);
-							tablaResultados.updateUI();
+							SwingUtilities.updateComponentTreeUI(tablaResultados);
 							
 							mostrarPanelSur.removeAll();
 							mostrarPanelSur = new MostrarPanelSur(fecha, "INGRESO");
 							add( mostrarPanelSur, BorderLayout.SOUTH);
-							mostrarPanelSur.updateUI();
-																		    		    	
+							SwingUtilities.updateComponentTreeUI(mostrarPanelSur);
+																						    		    	
 						} catch (IllegalStateException | SQLException | ClassNotFoundException e1) {
 							e1.printStackTrace();
 						}
 					}
 				}			
 			);
-			
+
 			botonGastos.addActionListener(
 				new ActionListener() 
 				{
+
 					public void actionPerformed( ActionEvent e ) 
 					{
 						int dia = (calendar.getCalendar().get(Calendar.DAY_OF_MONTH));
@@ -234,19 +235,18 @@ public class MostrarResultadosConsulta extends JFrame
 						
 						try {
 							panelNorte.removeAll();
-							panelNorte = mostrarPanelNorte.MostrarPanelNorte(fechaCompleta);
+							panelNorte = new MostrarPanelNorte(fechaCompleta);
 							add( panelNorte, BorderLayout.NORTH);
-							panelNorte.updateUI();
+						    SwingUtilities.updateComponentTreeUI(panelNorte);
 							
-							tablaResultados.removeAll();
 							modeloTabla.consultarGasto(fecha);
 							tablaResultados =  mostrarPanelCentral.MostrarPanelCentral(modeloTabla);
-							tablaResultados.updateUI();
+							SwingUtilities.updateComponentTreeUI(tablaResultados);
 							
 							mostrarPanelSur.removeAll();
 							mostrarPanelSur = new MostrarPanelSur(fecha, "GASTO");
 							add( mostrarPanelSur, BorderLayout.SOUTH);
-							mostrarPanelSur.updateUI();
+							SwingUtilities.updateComponentTreeUI(mostrarPanelSur);
 							
 						} catch (IllegalStateException | SQLException | ClassNotFoundException e1) {
 							e1.printStackTrace();
@@ -261,7 +261,7 @@ public class MostrarResultadosConsulta extends JFrame
 					public void actionPerformed( ActionEvent e ) 
 					{
 						try {
-							new MostrarVentanaGastos();								
+							new MostrarVentanaGastos();			
 						} catch (ClassNotFoundException | SQLException e1) {
 							e1.printStackTrace();
 						}
@@ -269,6 +269,21 @@ public class MostrarResultadosConsulta extends JFrame
 				}					
 			);
 			
+			botonInformacion.addActionListener(
+				new ActionListener() 
+				{
+					public void actionPerformed( ActionEvent e ) 
+					{
+						//verificarDatos();		
+						try {
+							new MostrarDetallePresupuesto();
+						} catch (ClassNotFoundException | SQLException e1) {
+							e1.printStackTrace();
+						}
+					}
+				}					
+			);
+							
 			botonNuevoIngreso.addActionListener(
 				new ActionListener() 
 				{
@@ -282,12 +297,11 @@ public class MostrarResultadosConsulta extends JFrame
 					}
 				}					
 			);
-			
+						
 			setSize(1000,500);
-			setResizable( true );
 			setLocationRelativeTo(null);
 			setVisible( true );
-
+			
 		} 
 		catch ( ClassNotFoundException noEncontroClase ) 
 		{
@@ -321,6 +335,37 @@ public class MostrarResultadosConsulta extends JFrame
 			} 
 		);
 	}
+	
+	public void actualizarComponentes() {
+		SwingUtilities.updateComponentTreeUI(this);
+	}
+	
+    public void verificarDatos() {
+
+        TableModel tablaModelo;
+        tablaModelo = (TableModel) tablaResultados.getModel();
+
+        boolean avanzar = true;
+
+        int registro = tablaResultados.getSelectedRow();
+        int columna = tablaResultados.getSelectedColumn();
+
+
+        if (registro == -1) {
+            avanzar = false;
+        } else if (columna == -1) {
+            avanzar = false;
+        }
+
+        if (avanzar) {
+            String strResultado = tablaModelo.getValueAt(
+            		tablaResultados.getSelectedRow(),
+            		tablaResultados.getSelectedColumn()).toString();
+            JOptionPane.showMessageDialog(null, "Dato seleccionado : " + strResultado);
+        } else {
+            JOptionPane.showMessageDialog(null, "No se ha seleccionado un registro");
+        }
+    }
 
 	public static void main( String args[] ) throws ClassNotFoundException, SQLException 
 	{

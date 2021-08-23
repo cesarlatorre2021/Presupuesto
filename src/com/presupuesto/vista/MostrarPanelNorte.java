@@ -7,19 +7,25 @@ import javax.swing.Box;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-public class MostrarPanelNorte {
+public class MostrarPanelNorte extends JPanel {
 	
-	public JPanel MostrarPanelNorte(String fechaCompleta) {
-		JPanel panelNorte = new JPanel();
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	public JLabel fechaNorte;
+
+	public MostrarPanelNorte(String fechaCompleta) {
 		Box boxNorte = Box.createHorizontalBox();	
-		JLabel fechaNorte = new JLabel();
+		fechaNorte = new JLabel();
 		fechaNorte.setForeground(Color.white);
 		fechaNorte.setFont(new Font("Sans Serif", Font.BOLD, 15));
 		fechaNorte.setText(fechaCompleta.toUpperCase());
 		boxNorte.add(fechaNorte);
-		panelNorte.add(boxNorte);
-		panelNorte.setBackground(new java.awt.Color(19,104,131));
-		return panelNorte;
+		this.add(boxNorte);
+		this.setBackground(new java.awt.Color(19,104,131));
+		this.updateUI();
 	}
 
 }

@@ -57,6 +57,8 @@ public class ResultSetTableModel extends AbstractTableModel
     		consultarGasto(fecha);
     	}else if(tipoConsulta == "INGRESO") {
     		consultarIngreso(fecha);
+    	}else if(tipoConsulta == "DETALLES") {
+    		consultarDetalles();
     	}
 	} 
 	 
@@ -144,7 +146,7 @@ public class ResultSetTableModel extends AbstractTableModel
 
 		 String consulta = "SELECT CATEGORIA\r\n"
 					+ "           ,DESCRIPCION\r\n"
-					+ "           ,TRIM(TO_CHAR(VALOR, '$999,999,999.00')) as VALOR \r\n"
+					+ "           ,TRIM(TO_CHAR(VALOR, '$999,999,999')) as VALOR \r\n"
 					+ "       FROM INFO_GASTOS\r\n"
 					+ "      WHERE TO_CHAR(FECHA,'DD/MM/YYYY') = TO_CHAR(TO_DATE("+ "'" + mes + "'" + "),'DD/MM/YYYY')"
 					+ "      ORDER BY FECHA, CATEGORIA";
@@ -164,7 +166,7 @@ public class ResultSetTableModel extends AbstractTableModel
 
 		 String consulta = "SELECT CATEGORIA\r\n"
 					+ "           ,DESCRIPCION\r\n"
-					+ "           ,TRIM(TO_CHAR(VALOR, '$999,999,999.00')) as VALOR \r\n"
+					+ "           ,TRIM(TO_CHAR(VALOR, '$999,999,999')) as VALOR \r\n"
 					+ "       FROM INFO_INGRESOS\r\n"
 					+ "      WHERE TO_CHAR(FECHA,'DD/MM/YYYY') = TO_CHAR(TO_DATE("+ "'" + mes + "'" + "),'DD/MM/YYYY')"
 					+ "      ORDER BY FECHA, CATEGORIA";
@@ -180,15 +182,34 @@ public class ResultSetTableModel extends AbstractTableModel
 		 fireTableStructureChanged();
 	 }
 	 
+	 public void consultarDetalles() throws SQLException, IllegalStateException {
+
+		 String consulta =  " SELECT CATEGORIA, "
+				            +"       TRIM(TO_CHAR(SUM(SC.VALOR), '$999,999,999')) TOTAL_GRUPO, "
+				            +"       ROUND(100*(SUM(SC.VALOR) / SUM(SUM(SC.VALOR)) OVER ()),2) PORCENTAJE "
+				            +"  FROM INFO_GASTOS SC "
+				            +" GROUP BY SC.CATEGORIA"
+				            +" ORDER BY PORCENTAJE DESC";
+	 
+		 if ( !conectadoABaseDatos )
+			 throw new IllegalStateException( "No hay conexion a la base de datos" );
+
+		 conjuntoResultados = instruccion.executeQuery( consulta );
+		 metaDatos = conjuntoResultados.getMetaData();
+		 conjuntoResultados.last(); 
+		 numeroDeFilas = conjuntoResultados.getRow();
+	 
+	 }
+	 
 	 public String consultarTotalesIngresoGasto(String mes, String tipoConsulta) throws SQLException, IllegalStateException {
 		 String consulta = null;
 		 if (tipoConsulta == "GASTO") {
-			 consulta = "SELECT TRIM(TO_CHAR(SUM(VALOR), '$999,999,999.00')) as VALOR \r\n"
+			 consulta = "SELECT TRIM(TO_CHAR(SUM(VALOR), '$999,999,999')) as VALOR \r\n"
 				 + "       FROM INFO_GASTOS\r\n"
 				 + "      WHERE TO_CHAR(FECHA,'DD/MM/YYYY') = TO_CHAR(TO_DATE("+ "'" + mes + "'" + "),'DD/MM/YYYY')"
 				 + "      ORDER BY FECHA, CATEGORIA";
 		 }else if(tipoConsulta == "INGRESO") {
-			 consulta = "SELECT TRIM(TO_CHAR(SUM(VALOR), '$999,999,999.00')) as VALOR \r\n"
+			 consulta = "SELECT TRIM(TO_CHAR(SUM(VALOR), '$999,999,999')) as VALOR \r\n"
 				 + "       FROM INFO_INGRESOS\r\n"
 				 + "      WHERE TO_CHAR(FECHA,'DD/MM/YYYY') = TO_CHAR(TO_DATE("+ "'" + mes + "'" + "),'DD/MM/YYYY')"
 				 + "      ORDER BY FECHA, CATEGORIA";
@@ -211,7 +232,7 @@ public class ResultSetTableModel extends AbstractTableModel
 	 }
 	 
 	 public String consultarTotalIngresos() throws SQLException, IllegalStateException {
-		 String consulta = "SELECT TRIM(TO_CHAR(SUM(VALOR), '$999,999,999.00')) as VALOR \r\n"
+		 String consulta = "SELECT TRIM(TO_CHAR(SUM(VALOR), '$999,999,999')) as VALOR \r\n"
 			 + "       FROM INFO_INGRESOS\r\n";
 	 	 
 		 if ( !conectadoABaseDatos )
@@ -232,7 +253,7 @@ public class ResultSetTableModel extends AbstractTableModel
 	 }
 	 
 	 public String consultarTotalGastos() throws SQLException, IllegalStateException {
-		 String consulta = "SELECT TRIM(TO_CHAR(SUM(VALOR), '$999,999,999.00')) as VALOR \r\n"
+		 String consulta = "SELECT TRIM(TO_CHAR(SUM(VALOR), '$999,999,999')) as VALOR \r\n"
 			 + "       FROM INFO_GASTOS\r\n";
 	 	 
 		 if ( !conectadoABaseDatos )
@@ -284,6 +305,7 @@ public class ResultSetTableModel extends AbstractTableModel
 					            "VALUES ( SEQ_INFO_IDGASTOS.nextval, ?, ?, ?, ? )";
 		 
 		 try{
+			 
 			 insertarNuevoGasto = conexion.prepareStatement(insertarGasto);
 			 
 			 insertarNuevoGasto.setString( 1, string.toString() );
@@ -310,6 +332,7 @@ public class ResultSetTableModel extends AbstractTableModel
 					            "VALUES (SEQ_INFO_IDINGRESO.nextval, ?, ?, ?, ? )";
 		 
 		 try{
+			 
 			 insertarNuevoIngreso = conexion.prepareStatement(insertarIngreso);
 			 
 			 insertarNuevoIngreso.setString( 1, string.toString() );

@@ -33,6 +33,7 @@ public class MostrarPanelSur extends JPanel {
 
 			Box general = Box.createVerticalBox();
 		    general.add(this);
+		    this.updateUI();
 		} catch (ClassNotFoundException | SQLException e) {
 			e.printStackTrace();
 		}
